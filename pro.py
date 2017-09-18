@@ -1,6 +1,6 @@
 import threading
 from enum import Enum
-from random import randint as rt
+from random import randint 
 import sys
 class Type(Enum):
 	A = 0
@@ -19,10 +19,10 @@ class Sponsor(threading.Thread):
 
 
 	"""
-	self.ID = randint(0,999999)
-	self.type = APPType.A
-	self.application_thread_pool = []
-	self.things_thread_pool = []
+	ID = randint(0,999999)
+	type = APPType.A
+	application_thread_pool = []
+	things_thread_pool = []
 
 	pass
 
@@ -31,8 +31,8 @@ class Apllication(threading.Thread):
 	"""
 
 	"""
-	self.type = APPType.A
-	self.things_thread_pool = []
+	type = APPType.A
+	things_thread_pool = []
 
 	def __init__(self):
 		self.evaluate()
@@ -48,9 +48,9 @@ class Thing(threading.Thread):
 	"""
 
 	"""
-	self.ID = randint(0,999999)
-	self.type = Type.A
-	self.value = 0
+	ID = randint(0,999999)
+	type = Type.A
+	value = 0
 
 
 
@@ -60,15 +60,14 @@ def Terminal(sponsors):
 		return
 	sponsor = sponsors[0]
 	bash = ""
-	print ("IoT command $ ")
 	while True:
 		try:
-			print("command $ ")
+			bash = input("command $ ")
 			if bash == "":
 				continue
 			elif bash == "topo":
 				apps = sorted(sponsor.application_thread_pool)
-				for cur in apps
+				for cur in apps:
 					print ("Application \"" + cur.ID + "\" has following thins : ")
 					for cur2 in cur.things_thread_pool:
 						print("Thing \"" + ucr2.ID + "\"")
@@ -90,7 +89,7 @@ def Terminal(sponsors):
 					try:
 						bash = input("command $ ")
 						number_tmp2 = int(bash)
-						if not(number_tmp2 < len(sponsor.application_thread_pool) and number_tmp2 => 0):
+						if not(number_tmp2 < len(sponsor.application_thread_pool) and (number_tmp2 > 0 or number_tmp2 == 0 )):
 							print("HA HA  :D i knew it!")
 							continue
 						bash = input("How many things do you want to append ? ")
@@ -121,6 +120,8 @@ def Terminal(sponsors):
 				else :
 					print("Ha Ha :D ")
 					continue
+			elif bash.lower() == "q" :
+				break
 			else :
 				print("Ha Ha :D")
 				continue
@@ -131,8 +132,8 @@ def Terminal(sponsors):
 
 if __name__ == '__main__':
 	sponsors = []
-	sponsors.appned(Sponsor())
-	Terminal(s)
+	sponsors.append(Sponsor())
+	Terminal(sponsors)
 
 
 
