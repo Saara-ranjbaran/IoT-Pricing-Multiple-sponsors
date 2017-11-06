@@ -16,18 +16,10 @@ class APPType(Enum):
     C = 2
     D = 3
 
-def EnergyType(En):
-     """for cur in range(1,En):
-"""
-'''
-def Valuation():
 
-from thing_thread_ pool evaluation
-if thing's type is unplugged (battery) : there is an increasing function
-if thing's type in plugged : 0
-
-
-'''
+class EnergyType(Enum):
+    Battery = 1
+    Plugged = 2
 
 
 
@@ -37,10 +29,11 @@ class Sponsor(threading.Thread):
 
 	"""
 
-    def __init__(self):
+    def __init__(self , center_x, center_y, r):
         self.ID = randint(1000, 9999)
-        self.application_thread_pool = []
-        self.things_thread_pool = []
+        self.center_x = center_x
+        self.center_y = center_y
+        self.r = r
 
     def __lt__(self, other):
         return self.ID > other.ID
@@ -51,12 +44,12 @@ class Application(threading.Thread):
 
 	"""
 
-    def __init__(self):
+    def __init__(self, x_from_center , y_from_center, sponsor):
         self.ID = randint(1000, 9999)
-        self.type = choice(['A','B','C','D'])
-        self.things_thread_pool =[]
-        self.evaluate()
-
+        self.type = choice([Type.A ,Type.B , Type.C , Type.D])
+        self.x = x_from_center
+        self.y = y_from_center
+        self.sponsor = sponsor
 
     def evaluate(self):
         for cur in self.things_thread_pool:
@@ -75,11 +68,14 @@ class Thing(threading.Thread):
 
 	"""
 
-    def __init__(self):
+    def __init__(self, x_from_center, y_from_center, energy_type, app):
         self.ID = randint(1000, 9999)
-        self.type = choice(['A','B','C','D'])
+        self.type = choice([Type.A ,Type.B, Type.C, Type.D])
         self.value = 0
-        self.EnType = 'Battery'
+        self.app = app
+        self.x = x_from_center
+        self.y = y_from_center
+        self.EnType = EnergyType.Battery
 
     def __lt__(self, other):
         return self.ID > other.ID
@@ -238,8 +234,12 @@ def Terminal(sponsors):
                         print(sys.exc_info())
                         continue
                 elif bash == "1":
-                    bash = input("How many sponsor(s) do you want to append ? ")
-                    number_tmp3 = int(bash)
+                    bash = input("Enter max x that sponsor supports:")
+                    max_x_tmp = int(bash)
+
+                    bash = input("Enter max y that sponsor supports:")
+                    max_y_tmp = int(bash)
+
                     for cur4 in range(0, number_tmp3):
                         t = Sponsor()
                         sponsors.append(t)
