@@ -29,11 +29,14 @@ class Sponsor(threading.Thread):
 
 	"""
 
-    def __init__(self , center_x, center_y, r):
+    def __init__(self , center_x, center_y, s_range):
         self.ID = randint(1000, 9999)
         self.center_x = center_x
         self.center_y = center_y
-        self.r = r
+        self.s_range = s_range
+        self.application_thread_pool = []
+        self.things_thread_pool = []
+
 
     def __lt__(self, other):
         return self.ID > other.ID
@@ -44,12 +47,14 @@ class Application(threading.Thread):
 
 	"""
 
-    def __init__(self, x_from_center , y_from_center, sponsor):
+    def __init__(self, x_from_center , y_from_center, a_range):
         self.ID = randint(1000, 9999)
         self.type = choice([Type.A ,Type.B , Type.C , Type.D])
         self.x = x_from_center
         self.y = y_from_center
-        self.sponsor = sponsor
+        self.things_thread_pool = []
+        self.a_range = a_range
+
 
     def evaluate(self):
         for cur in self.things_thread_pool:
@@ -68,17 +73,19 @@ class Thing(threading.Thread):
 
 	"""
 
-    def __init__(self, x_from_center, y_from_center, energy_type, app):
+    def __init__(self, x_from_center, y_from_center):
         self.ID = randint(1000, 9999)
         self.type = choice([Type.A ,Type.B, Type.C, Type.D])
-        self.value = 0
-        self.app = app
+        self.value = []
         self.x = x_from_center
         self.y = y_from_center
         self.EnType = EnergyType.Battery
 
     def __lt__(self, other):
         return self.ID > other.ID
+
+
+
 
 
 
@@ -163,11 +170,27 @@ def Terminal(sponsors):
                             pluged_num =int((pluged_num*number_tmp3)/100)
                             counter1 = 0
 
+                            x2 = randrange(0, 100)
+                            y2 = randrange(0, 100)
+
                             for cur4 in range(0, number_tmp3):
-                                t = Thing()
+                                x1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].x
+                                y1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].y
+                                r1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].a_range
+                                while True:
+                                    if ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) < (r1 * r1)):
+                                        break
+                                    else:
+                                        x2 = randrange(0, 100)
+                                        y2 = randrange(0, 100)
+                                t = Thing(x2,y2)
                                 sorted(sponsors)[number_tmp4].things_thread_pool.append(t)
                                 sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[
                                     number_tmp2].things_thread_pool.append(t)
+                                things.append(t)
+
+
+
 
 
                             '''for cur5 in range(0,pluged_num):
@@ -224,8 +247,22 @@ def Terminal(sponsors):
                             continue
                         bash = input("How many application(s) do you want to append ? ")
                         number_tmp3 = int(bash)
+                        x2=randrange(0,100)
+                        y2=randrange(0,100)
+                        r2=randrange(5,10)
+
                         for cur4 in range(0, number_tmp3):
-                            t = Application()
+                            x1 = sorted(sponsors)[number_tmp2].center_x
+                            y1 = sorted(sponsors)[number_tmp2].center_y
+                            r1 = sorted(sponsors)[number_tmp2].s_range
+                            while True:
+                                if ((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)< (r1*r1) ):
+                                    break
+                                else:
+                                    x2 = randrange(0, 100)
+                                    y2 = randrange(0, 100)
+
+                            t = Application(x2,y2,r2)
                             sorted(sponsors)[number_tmp2].application_thread_pool.append(t)
 
                         print("Done!")
@@ -234,15 +271,20 @@ def Terminal(sponsors):
                         print(sys.exc_info())
                         continue
                 elif bash == "1":
+                    """
                     bash = input("Enter max x that sponsor supports:")
                     max_x_tmp = int(bash)
 
                     bash = input("Enter max y that sponsor supports:")
                     max_y_tmp = int(bash)
+                    """
+                    bash = input("How many sponsor(s) do you want to append ? ")
+                    number_tmp3 = int (bash)
 
                     for cur4 in range(0, number_tmp3):
-                        t = Sponsor()
+                        t = Sponsor(randrange(0,100),randrange(0,100),randrange(10,20))
                         sponsors.append(t)
+
                     print("Done!")
 
 
@@ -256,7 +298,28 @@ def Terminal(sponsors):
                 # 	file  = open(bash)
 
             elif bash == "evaluate":
+                h=0
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in range(0, len(apps)):
+                        for cur3 in range(0,len(things)):
+                            things[cur3].value.append(uniform(0,1))
 
+                    for cur3 in range(0,len(things)):
+                            for cur5 in range (0,len(things[cur3].value)):
+                                h+=things[cur3].value[cur5]
+                            h = h / len(things[cur3].value)
+                            print("Thing \"" + str(things[cur3].ID) + "\""+":  "+str(h))
+                            h=0
+
+
+
+
+
+
+                '''
                 for cur11 in sorted(sponsors):
                     apps = sorted(cur11.application_thread_pool)
                     if len(cur11.application_thread_pool) == 0:
@@ -268,7 +331,7 @@ def Terminal(sponsors):
 
                             print("Thing \"" + str(cur2.ID) + "\"")
                     print("---------------------------------------------------------------------------")
-
+                '''
             elif bash == "help":
                 print (" \"create\"  to create Sponsor/Application/Thing ")
                 print (" \"topo\" to view designed system")
@@ -301,12 +364,7 @@ def Terminal(sponsors):
 
 if __name__ == '__main__':
     sponsors = []
+    things=[]
     Terminal(sponsors)
-
-
-
-
-
-
 
 
