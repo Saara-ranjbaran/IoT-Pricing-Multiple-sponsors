@@ -1,6 +1,7 @@
 import threading
 from random import *
 from enum import Enum
+import math
 
 import sys
 
@@ -54,6 +55,8 @@ class Application(threading.Thread):
         self.y = y_from_center
         self.things_thread_pool = []
         self.a_range = a_range
+        self.avg_of_values_of_things = 0
+        self.avg_of_distances_of_things = 0
 
 
     def evaluate(self):
@@ -80,11 +83,18 @@ class Thing(threading.Thread):
         self.x = x_from_center
         self.y = y_from_center
         self.EnType = EnergyType.Battery
+        self.distance_from_app=0
+        self.avg_of_values=0
 
     def __lt__(self, other):
         return self.ID > other.ID
 
 
+
+def check_distance (x2 , y2 , x1 , y1 ) :
+    d = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)
+    d= math.sqrt(d)
+    return d
 
 
 
@@ -188,6 +198,11 @@ def Terminal(sponsors):
                                 sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[
                                     number_tmp2].things_thread_pool.append(t)
                                 things.append(t)
+                                t.distance_from_app=check_distance(x2,y2,x1,y1)
+                                x2 = randrange(0, 100)
+                                y2 = randrange(0, 100)
+
+
 
 
 
@@ -264,6 +279,9 @@ def Terminal(sponsors):
 
                             t = Application(x2,y2,r2)
                             sorted(sponsors)[number_tmp2].application_thread_pool.append(t)
+                            x2 = randrange(0, 100)
+                            y2 = randrange(0, 100)
+                            r2 = randrange(5, 10)
 
                         print("Done!")
                     except:
@@ -299,21 +317,89 @@ def Terminal(sponsors):
 
             elif bash == "evaluate":
                 h=0
+                if len(sponsors) == 0:
+                    print("Nothing to show ! ")
                 for cur11 in sorted(sponsors):
+                    print(
+                        "||||||||||||||||||| Sponsor \"" + str(
+                            cur11.ID) + "\" has following Apps |||||||||||||||||||")
                     apps = sorted(cur11.application_thread_pool)
                     if len(cur11.application_thread_pool) == 0:
                         continue
+                    for cur in apps:
+                        print("---------------Application \"" + str(
+                            cur.ID) + "\" has following thins -------------------")
+                        for cur3 in range(0, len(things)):
+                            things[cur3].value.append(uniform(0, 1))
+                        for cur2 in sorted(cur.things_thread_pool):
+                            for cur5 in range(0, len(cur2.value)):
+                                h += cur2.value[cur5]
+                            h = h / len(cur2.value)
+                            cur2.avg_of_values = h
+                            h = 0
+                        for cur2 in sorted(cur.things_thread_pool):
+                            cur.avg_of_values_of_things += cur2.avg_of_values
+                            cur.avg_of_values_of_things /= len(cur.things_thread_pool)
+                        for cur2 in sorted(cur.things_thread_pool):
+                            cur.avg_of_distances_of_things += cur2.distance_from_app
+                            cur.avg_of_distances_of_things /= len(cur.things_thread_pool)
+
+                        print("Average of values :" + str(cur.avg_of_values_of_things) )
+                        print("Number of things :" + str(len(cur.things_thread_pool)))
+                        print("Average of distance :" + str(cur.avg_of_distances_of_things))
+
+
+
+
+
+                    '''
                     for cur in range(0, len(apps)):
+                        print("---------------Application \"" + str(
+                            cur.ID) + "\" has following things -------------------")
                         for cur3 in range(0,len(things)):
                             things[cur3].value.append(uniform(0,1))
 
-                    for cur3 in range(0,len(things)):
-                            for cur5 in range (0,len(things[cur3].value)):
-                                h+=things[cur3].value[cur5]
-                            h = h / len(things[cur3].value)
-                            print("Thing \"" + str(things[cur3].ID) + "\""+":  "+str(h))
-                            h=0
+                        for cur3 in range(0,len(things)):
+                                for cur5 in range (0,len(things[cur3].value)):
+                                    h+=things[cur3].value[cur5]
+                                h = h / len(things[cur3].value)
+                                print("Thing \"" + str(things[cur3].ID) + "\""+":  "+str(h))
+                                h=0
 
+
+                    if len(sponsors) == 0:
+                        print("Nothing to show ! ")
+                        continue
+                    for cur11 in sorted(sponsors):
+                        print(
+                            "||||||||||||||||||| Sponsor \"" + str(
+                                cur11.ID) + "\" has following thins |||||||||||||||||||")
+                        apps = sorted(cur11.application_thread_pool)
+                        if len(cur11.application_thread_pool) == 0:
+                            continue
+                        for cur in apps:
+                            print("---------------Application \"" + str(
+                                cur.ID) + "\" has following thins -------------------")
+                            for cur2 in sorted(cur.things_thread_pool):
+                                print("Thing \"" + str(cur2.ID) + "\"")
+                        print("---------------------------------------------------------------------------")
+                    print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+                    '''
+
+                    '''
+                    for cur3 in range(0, len(things)):
+
+                        print(things[cur3].x)
+                        print(things[cur3].y)
+                        print(things[cur3].distance_from_app)
+                    for cur11 in sorted(sponsors):
+                        apps = sorted(cur11.application_thread_pool)
+                        if len(cur11.application_thread_pool) == 0:
+                            continue
+                        for cur in range(0, len(apps)):
+                            print(apps[cur].x)
+                            print(apps[cur].y)
+                    '''
 
 
 
