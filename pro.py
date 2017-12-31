@@ -264,7 +264,7 @@ def Terminal(sponsors):
                         number_tmp3 = int(bash)
                         x2=randrange(0,100)
                         y2=randrange(0,100)
-                        r2=randrange(5,10)
+                        r2=randrange(20,50)
 
                         for cur4 in range(0, number_tmp3):
                             x1 = sorted(sponsors)[number_tmp2].center_x
@@ -317,6 +317,7 @@ def Terminal(sponsors):
 
             elif bash == "evaluate":
                 h=0
+                v=0
                 if len(sponsors) == 0:
                     print("Nothing to show ! ")
                 for cur11 in sorted(sponsors):
@@ -327,26 +328,75 @@ def Terminal(sponsors):
                     if len(cur11.application_thread_pool) == 0:
                         continue
                     for cur in apps:
-                        print("---------------Application \"" + str(
-                            cur.ID) + "\" has following thins -------------------")
+
                         for cur3 in range(0, len(things)):
                             things[cur3].value.append(uniform(0, 1))
-                        for cur2 in sorted(cur.things_thread_pool):
-                            for cur5 in range(0, len(cur2.value)):
-                                h += cur2.value[cur5]
-                            h = h / len(cur2.value)
-                            cur2.avg_of_values = h
-                            h = 0
-                        for cur2 in sorted(cur.things_thread_pool):
-                            cur.avg_of_values_of_things += cur2.avg_of_values
+
+                    for cur in apps:
+                        print("---------------Application \"" + str(
+                            cur.ID) + "\" has following thins -------------------")
+                        for cur5 in sorted(cur.things_thread_pool):
+                            cur5.avg_of_values=sum(cur5.value)/len(cur5.value)
+                        for cur4 in sorted(cur.things_thread_pool):
+                            cur.avg_of_values_of_things += cur4.avg_of_values
+                        if (len(cur.things_thread_pool)!=0):
                             cur.avg_of_values_of_things /= len(cur.things_thread_pool)
-                        for cur2 in sorted(cur.things_thread_pool):
-                            cur.avg_of_distances_of_things += cur2.distance_from_app
+                        for cur5 in sorted(cur.things_thread_pool):
+                            cur.avg_of_distances_of_things += cur5.distance_from_app
+                        if (len(cur.things_thread_pool) != 0):
                             cur.avg_of_distances_of_things /= len(cur.things_thread_pool)
 
                         print("Average of values :" + str(cur.avg_of_values_of_things) )
                         print("Number of things :" + str(len(cur.things_thread_pool)))
                         print("Average of distance :" + str(cur.avg_of_distances_of_things))
+
+
+            elif bash == "show details":
+                for cur in apps:
+                    print("---------------Application \"" + str(
+                        cur.ID) + "\" has following thins -------------------")
+                    for cur2 in sorted(cur.things_thread_pool):
+                        print("list of values : " + str(cur2.value))
+                        print("distance from app : " + str(cur2.distance_from_app))
+                        print("avg of values : " + str(cur2.avg_of_values))
+                    print("for apps :")
+                    print("avg of values of apps :" + str(cur.avg_of_values_of_things))
+                    print("avg of distances of things :"+ str(cur.avg_of_distances_of_things))
+
+
+            elif bash == "pref":
+                for cur in apps:
+                    print("---------------Application \"" + str(
+                        cur.ID) + "\" has following thins -------------------")
+                    alpha = randrange(0,10)/10
+                    print("Alpha = "+ str(alpha))
+                    beta= randrange(0,10)/10
+                    print("Beta = " + str(beta))
+                    landa = randrange(0,10)/10
+                    print("Landa = " + str(landa))
+                    p= alpha*cur.avg_of_values_of_things + beta* len(cur.things_thread_pool)+ landa*cur.avg_of_distances_of_things
+
+
+                    print("Preference of this app is :"+ str(p) )
+
+            elif bash == "sub":
+                n=0
+                for cur in apps:
+                    print("---------------Application \"" + str(
+                        cur.ID) + "\" has following thins -------------------")
+
+                    for cur16 in things:
+                        is_in_range = check_distance(cur16.x,cur16.y,cur.x,cur.y)
+                        if (is_in_range < cur.a_range):
+                            print("thing "+ str(cur16.ID))
+                            n+=1
+                    print(n)
+                    n=0
+
+
+
+
+
 
 
 
@@ -418,6 +468,7 @@ def Terminal(sponsors):
                             print("Thing \"" + str(cur2.ID) + "\"")
                     print("---------------------------------------------------------------------------")
                 '''
+
             elif bash == "help":
                 print (" \"create\"  to create Sponsor/Application/Thing ")
                 print (" \"topo\" to view designed system")
