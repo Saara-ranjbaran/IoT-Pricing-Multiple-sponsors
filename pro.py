@@ -130,6 +130,7 @@ def evaluation():
             print("Average of values :" + str(cur.avg_of_values_of_things))
             print("Number of things :" + str(len(cur.things_thread_pool)))
             print("Average of distance :" + str(cur.avg_of_distances_of_things))
+            print('')
 
 
 
@@ -403,23 +404,37 @@ def Terminal(sponsors):
 
 
             elif bash == "pref":
+                print("Do you want to add new attribute for preference function? (y/n)")
+                bash = input("$:")
+
                 for cur11 in sorted(sponsors):
                     apps = sorted(cur11.application_thread_pool)
                     if len(cur11.application_thread_pool) == 0:
                         continue
                     for cur in apps:
+
+                        if bash == 'y':
+                            alpha = randrange(0, 10) / 10
+                            beta = randrange(0, 10) / 10
+                            landa = randrange(0, 10) / 10
+
+                            cur.alpha = alpha
+                            cur.beta = beta
+                            cur.landa = landa
+                        if bash != 'y' and bash != 'n':
+                            print("Wrong command !")
+                            continue
                         print("---------------Application \"" + str(
                             cur.ID) + "\" has following things -------------------")
-                        alpha = randrange(0,10)/10
-                        cur.alpha = alpha
+
+
+
+
                         print("Alpha = "+ str(cur.alpha))
-                        beta= randrange(0,10)/10
-                        cur.beta = beta
                         print("Beta = " + str(cur.beta))
-                        landa = randrange(0,10)/10
-                        cur.landa = landa
                         print("Landa = " + str(cur.landa))
-                        p= alpha*int(cur.avg_of_values_of_things*100) + beta* len(cur.things_thread_pool)*2 + landa*(50-int(cur.avg_of_distances_of_things))*2
+
+                        p= cur.alpha*int(cur.avg_of_values_of_things*100) + cur.beta* len(cur.things_thread_pool)*2 + cur.landa*(50-int(cur.avg_of_distances_of_things))*2
                         cur.pref = p
 
 
@@ -482,21 +497,33 @@ def Terminal(sponsors):
                                     n += 1
                         n = 0
                 print("Do you want to add a thing in any application? (y/n)")
-                bash = input("$:")
-                if bash == "y":
+                bash2 = input("$:")
+                if bash2 == "y":
                     print("Enter the ID of the thing :")
                     bash = input("$:")
+
+                    for cur16 in things:
+                        if cur16.ID == int(bash):
+                            print("Enter the ID of the application :")
+                            bash2 = input("$:")
+                            for cur11 in sorted(sponsors):
+                                apps = sorted(cur11.application_thread_pool)
+                                if len(cur11.application_thread_pool) == 0:
+                                    continue
+                                for cur in apps:
+                                    if cur.ID == int(bash2):
+                                        print("Done")
+
+
                     for cur11 in sorted(sponsors):
                         apps = sorted(cur11.application_thread_pool)
                         if len(cur11.application_thread_pool) == 0:
                             continue
                         n = 0
-                        for cur16 in things:
-                            if cur16.ID == int(bash):
-                                print("Enter the ID of the application :")
-                                bash = input("$:")
-                                for cur in apps:
-                                    if cur.ID == int(bash):
+                        for cur in apps:
+                            if cur.ID == int(bash2):
+                                for cur16 in things:
+                                    if cur16.ID == int(bash):
                                         is_in_range = check_distance(cur16.x, cur16.y, cur.x, cur.y)
                                         if (is_in_range < cur.a_range):
                                             if cur16 not in cur.things_thread_pool:
@@ -504,14 +531,12 @@ def Terminal(sponsors):
                                                 cur11.things_thread_pool.append(cur16)
                                                 print("Done")
 
+                if bash2 != 'y' and bash2 != 'n':
+                    print("Wrong command !")
+                    continue
 
 
-
-
-
-
-
-                elif bash == "n":
+                elif bash2 == "n":
                     continue
 
 
