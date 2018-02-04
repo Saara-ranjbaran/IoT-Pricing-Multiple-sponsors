@@ -3,6 +3,9 @@ from random import *
 from enum import Enum
 import math
 import sys
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 class Type(Enum):
     A = 0
@@ -18,7 +21,7 @@ class EnergyType(Enum):
     Battery = 1
     Plugged = 2
 
-
+#defining 3 dain class : Sponsor , Application , Thing
 
 class Sponsor(threading.Thread):
 
@@ -74,19 +77,23 @@ class Thing(threading.Thread):
         self.value = []
         self.x = x_from_center
         self.y = y_from_center
-        self.EnType = EnergyType.Battery
+        self.EnType = 'unplugged'
         self.distance_from_app=0
         self.avg_of_values=0
+        self.pnum=0
 
     def __lt__(self, other):
         return self.ID > other.ID
 
 
+#this function check distance of 2 nodes (Euclidean distance)
 
 def check_distance (x2 , y2 , x1 , y1 ) :
     d = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)
     d= math.sqrt(d)
     return d
+
+#this function evaluates each application and shows the average of distance and values , and number of distances
 
 def evaluation():
     h = 0
@@ -114,12 +121,17 @@ def evaluation():
                 things[cur3].value.append(uniform(0, 1))
 
         for cur in apps:
+            p1=0
             print("---------------Application \"" + str(
                 cur.ID) + "\" has following things -------------------")
             for cur5 in sorted(cur.things_thread_pool):
                 cur5.avg_of_values = sum(cur5.value) / len(cur5.value)
             for cur4 in sorted(cur.things_thread_pool):
                 cur.avg_of_values_of_things += cur4.avg_of_values
+            for cur3 in sorted(cur.things_thread_pool):
+                if (cur3.EnType == 'unplugged'):
+                    p1+=1
+
             if (len(cur.things_thread_pool) != 0):
                 cur.avg_of_values_of_things /= len(cur.things_thread_pool)
             for cur5 in sorted(cur.things_thread_pool):
@@ -127,9 +139,11 @@ def evaluation():
             if (len(cur.things_thread_pool) != 0):
                 cur.avg_of_distances_of_things /= len(cur.things_thread_pool)
 
+            cur.pnum=p1
             print("Average of values :" + str(cur.avg_of_values_of_things))
             print("Number of things :" + str(len(cur.things_thread_pool)))
             print("Average of distance :" + str(cur.avg_of_distances_of_things))
+            print("Number of unplugged devices :"+ str(p1))
             print('')
 
 
@@ -138,13 +152,14 @@ def evaluation():
 def Terminal(sponsors):
     bash = ""
     print("Plesae type  \"help\" to see how can you use the system ")
+    G = nx.Graph()
     while True:
         try:
 
             bash = input("command $ ")
             if bash == "":
                 continue
-#TOPO
+# TOPO
             elif bash == "topo":
                 if len(sponsors) == 0:
                     print("Nothing to show ! ")
@@ -164,7 +179,7 @@ def Terminal(sponsors):
                     print("---------------------------------------------------------------------------")
                 print("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
 
-#CREATE
+# CREATE
             elif bash == "create":
                 bash = input("Which one do you wanna create ? \n1 ) Sponsors \n2 ) Application \n3 ) Things \n? ")
 
@@ -221,53 +236,55 @@ def Terminal(sponsors):
                                 else :
                                     pluged_num =int((pluged_num*number_tmp3)/100)
                                     counter1 = 0
+                                print(pluged_num)
 
                                 x2 = randrange(0, 100)
                                 y2 = randrange(0, 100)
 
                                 for cur4 in range(0, number_tmp3):
-                                    x1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].x
-                                    y1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].y
-                                    r1 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].a_range
+                                    x1 = sorted(sponsors)[number_tmp4].center_x
+                                    y1 = sorted(sponsors)[number_tmp4].center_y
+                                    r1 = sorted(sponsors)[number_tmp4].s_range
+
+                                    x3 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].x
+                                    y3 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].y
+                                    r3 = sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[
+                                        number_tmp2].a_range
                                     while True:
-                                        if ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) < (r1 * r1)):
-                                            break
-                                        else:
-                                            x2 = randrange(0, 100)
-                                            y2 = randrange(0, 100)
+                                        d1 = check_distance(x2, y2, x1, y1)
+                                        if (d1 < r1):
+                                            d = check_distance(x2, y2, x3, y3)
+                                            if (d<r3):
+                                                break
+
+                                        x2 = randrange(0, 100)
+                                        y2 = randrange(0, 100)
                                     t = Thing(x2,y2)
                                     sorted(sponsors)[number_tmp4].things_thread_pool.append(t)
                                     sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[
                                         number_tmp2].things_thread_pool.append(t)
                                     things.append(t)
                                     t.distance_from_app=check_distance(x2,y2,x1,y1)
+
+
+
                                     x2 = randrange(0, 100)
                                     y2 = randrange(0, 100)
 
+                                for cur20 in range(0,pluged_num):
+                                    sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[
+                                        number_tmp2].things_thread_pool[cur20].EnType = 'pluged'
 
-                                for cur20 in sorted(sponsors):
-                                    for cur21 in sorted(cur20.application_thread_pool):
-                                        for cur22 in sorted(cur21.things_thread_pool):
-                                            while (counter1<pluged_num):
-                                                cur22.EnType='plugged'
-                                                counter1=counter1+1
-                                                '''print(cur22.EnType)
 
-                                print("--------------------------------------------------------------------------")
 
-                                counter4 =pluged_num
-                                for cur in sorted(sponsors):
-                                    for cur2 in sorted(cur.application_thread_pool):
-                                        for cur3 in sorted(cur2.things_thread_pool):
-                                            if(counter4<30):
-                                                print(str(cur3.EnType))
-                                                counter4 =counter4+1
-                                            '''
 
                             except:
                                 #print("Error (5)")
                                 #print(sys.exc_info())
                                 continue
+
+
+
 
                     except:
                         print("Error (10)")
@@ -301,14 +318,17 @@ def Terminal(sponsors):
                             number_tmp3 = int(bash)
                             x2=randrange(0,100)
                             y2=randrange(0,100)
-                            r2=randrange(20,50)
+                            r2=randrange(15,40)
+
+
 
                             for cur4 in range(0, number_tmp3):
                                 x1 = sorted(sponsors)[number_tmp2].center_x
                                 y1 = sorted(sponsors)[number_tmp2].center_y
                                 r1 = sorted(sponsors)[number_tmp2].s_range
                                 while True:
-                                    if ((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)< (r1*r1) ):
+                                    d2=check_distance(x2,y2,x1,y1)
+                                    if (d2 < r1):
                                         break
                                     else:
                                         x2 = randrange(0, 100)
@@ -316,9 +336,10 @@ def Terminal(sponsors):
 
                                 t = Application(x2,y2,r2)
                                 sorted(sponsors)[number_tmp2].application_thread_pool.append(t)
+
                                 x2 = randrange(0, 100)
                                 y2 = randrange(0, 100)
-                                r2 = randrange(5, 10)
+                                r2 = randrange(15, 40)
 
                             print("Done!")
                     except:
@@ -339,7 +360,7 @@ def Terminal(sponsors):
                         print("Wrong command")
 
                     for cur4 in range(0, number_tmp3):
-                        t = Sponsor(randrange(0,40),randrange(0,40),randrange(10,20))
+                        t = Sponsor(randrange(30,70),randrange(30,70),randrange(10,30))
                         sponsors.append(t)
                     n=1
                     for cur7 in sorted(sponsors):
@@ -362,8 +383,6 @@ def Terminal(sponsors):
 
 
 
-
-
                     print("Done!")
 
                 elif bash == "back":
@@ -380,7 +399,7 @@ def Terminal(sponsors):
                 # 	file  = open(bash)
 
 
-#EVALUATE
+# EVALUATE
             elif bash == "evaluate":
                 evaluation()
 #SHOW DETAILS
@@ -400,9 +419,8 @@ def Terminal(sponsors):
                         print("avg of values of apps :" + str(cur.avg_of_values_of_things))
                         print("avg of distances of things :"+ str(cur.avg_of_distances_of_things))
 
-#PREF
 
-
+# PREF
             elif bash == "pref":
                 print("Do you want to add new attribute for preference function? (y/n)")
                 bash = input("$:")
@@ -417,6 +435,7 @@ def Terminal(sponsors):
                             alpha = randrange(0, 10) / 10
                             beta = randrange(0, 10) / 10
                             landa = randrange(0, 10) / 10
+                            teta = randrange(1, 5) / 10
 
                             cur.alpha = alpha
                             cur.beta = beta
@@ -427,20 +446,19 @@ def Terminal(sponsors):
                         print("---------------Application \"" + str(
                             cur.ID) + "\" has following things -------------------")
 
-
-
-
                         print("Alpha = "+ str(cur.alpha))
                         print("Beta = " + str(cur.beta))
                         print("Landa = " + str(cur.landa))
+                        print("teta = " + str(teta))
 
-                        p= cur.alpha*int(cur.avg_of_values_of_things*100) + cur.beta* len(cur.things_thread_pool)*2 + cur.landa*(50-int(cur.avg_of_distances_of_things))*2
+                        p= cur.alpha*int(cur.avg_of_values_of_things*100) + cur.beta* len(cur.things_thread_pool)*2 + cur.landa*(int(cur.avg_of_distances_of_things))*2+ teta *cur.pnum
                         cur.pref = p
 
 
                         print("Preference of this app is :"+ str(p) )
 
-#SUB
+
+# SUB
             elif bash == "sub":
                 for cur11 in sorted(sponsors):
                     apps = sorted(cur11.application_thread_pool)
@@ -462,7 +480,7 @@ def Terminal(sponsors):
                         print("number of available things :" + str(n))
                         n=0
 
-#subsets
+# SUBSETS
             elif bash == "subsets":
                 for cur11 in sorted(sponsors):
                     apps = sorted(cur11.application_thread_pool)
@@ -472,7 +490,8 @@ def Terminal(sponsors):
                     for cur in apps:
                         print("---------------Optimum subsets of application \"" + str(
                             cur.ID) + "\"  -------------------")
-
+                        v1=cur.avg_of_values_of_things
+                        v2=cur.avg_of_distances_of_things
                         for cur16 in things:
                             is_in_range = check_distance(cur16.x, cur16.y, cur.x, cur.y)
                             if (is_in_range < cur.a_range):
@@ -494,6 +513,8 @@ def Terminal(sponsors):
                                     print("Estimated cost is : "+str(cost)+"$")
                                     print('')
                                     print('')
+                                    cur.avg_of_values_of_things=v1
+                                    cur.avg_of_distances_of_things=v2
                                     n += 1
                         n = 0
                 print("Do you want to add a thing in any application? (y/n)")
@@ -539,29 +560,208 @@ def Terminal(sponsors):
                 elif bash2 == "n":
                     continue
 
+# POSITIONS
+            elif bash == "positions":
+                for cur11 in sorted(sponsors):
+                    print("Sponsor  "+str(cur11.type)+": ")
+                    print('')
+                    print("x: "+str(cur11.center_x))
+                    print("y: " + str(cur11.center_y))
+                    print("r: " + str(cur11.s_range))
+                    print('')
+                    print('')
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        print("Application  " + str(cur.ID) + ": ")
+                        print('')
+                        print("x: " + str(cur.x))
+                        print("y: " + str(cur.y))
+                        print("r: " + str(cur.a_range))
+                        print('')
+                        print('')
+                        tng = sorted(cur.things_thread_pool)
+                        for cur2 in tng:
+                            print("Thing  " + str(cur2.ID) + ": ")
+                            print('')
+                            print("x: " + str(cur2.x))
+                            print("y: " + str(cur2.y))
+                            print('')
+                            print('')
 
 
-#HELP
+# GRAPHICAL SHOW
+            elif bash == "g":
+                for cur50 in sorted(sponsors):
+                    G.add_node(cur50.ID)
+                    pos = {cur50.ID: (cur50.center_x, cur50.center_y)}
+                    nx.draw_networkx_nodes(G, pos, node_size=cur50.s_range * 800, nodelist=[cur50.ID], node_color='r',
+                                           alpha=0.1)
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        G.add_node(cur.ID)
+                        pos = {cur.ID: (cur.x, cur.y)}
+                        nx.draw_networkx_nodes(G, pos, nodelist=[cur.ID], node_color='b', alpha=0.8)
+
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        tng = sorted(cur.things_thread_pool)
+                        for cur2 in tng:
+                            G.add_node(cur2.ID)
+                            pos = {cur2.ID: (cur2.x, cur2.y)}
+                            nx.draw_networkx_nodes(G, pos, nodelist=[cur2.ID], node_size=50, node_color='g', alpha=0.8)
+                            #G.add_edge(sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].ID,t.ID)
+                            #pos = {sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].ID: (sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].x,sorted(sorted(sponsors)[number_tmp4].application_thread_pool)[number_tmp2].y),t.ID: (t.x, t.y)}
+                            #G.draw_networkx_edges(G, pos)
+
+
+                G.add_node(1)
+                G.add_node(2)
+                G.add_node(3)
+                G.add_node(4)
+                pos1 = {1: (0, 0), 2: (0, 500), 3: (500, 500), 4: (500, 0)}
+                nx.draw_networkx_nodes(G, pos=pos1, node_size=1, nodelist=[1, 2, 3, 4], node_color='b',alpha=0.1)
+                plt.show()
+# RANDOM
+            elif bash == "random":
+                rand1 = randrange(1,4)
+                rand2 = randrange(1,5)
+                rand3 = randrange(0,15)
+
+                number_tmp3 = rand1
+
+                for cur4 in range(0, number_tmp3):
+                    t = Sponsor(randrange(30, 470), randrange(30, 470), randrange(50, 100))
+                    sponsors.append(t)
+                n = 1
+                for cur7 in sorted(sponsors):
+                    if n == 1:
+                        cur7.type = 'A'
+                    if n == 2:
+                        cur7.type = 'B'
+                    if n == 3:
+                        cur7.type = 'C'
+                    if n == 4:
+                        cur7.type = 'D'
+                    if n == 5:
+                        cur7.type = 'E'
+                    if n == 6:
+                        cur7.type = 'F'
+                    if n == 7:
+                        cur7.type = 'G'
+                    n += 1
+
+
+
+
+
+                for cur13 in sorted(sponsors):
+                    number_tmp4 = randrange(1, 5)
+                    x2 = randrange(0, 500)
+                    y2 = randrange(0, 500)
+                    r2 = randrange(150, 200)
+
+                    for cur4 in range(0, number_tmp4):
+                        x1 = cur13.center_x
+                        y1 = cur13.center_y
+                        r1 = cur13.s_range
+                        while True:
+                            d2 = check_distance(x2, y2, x1, y1)
+                            if (d2 < r1):
+                                break
+                            else:
+                                x2 = randrange(0, 500)
+                                y2 = randrange(0, 500)
+
+                        t = Application(x2, y2, r2)
+                        cur13.application_thread_pool.append(t)
+
+                        x2 = randrange(0, 500)
+                        y2 = randrange(0, 500)
+                        r2 = randrange(150, 200)
+
+
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        number_tmp5 = randrange(0, 15)
+                        pluged_num = randrange(0,100)
+
+                        pluged_num = int((pluged_num * number_tmp5) / 100)
+                        counter1 = 0
+
+                        x2 = randrange(0, 100)
+                        y2 = randrange(0, 100)
+
+                        for cur4 in range(0, number_tmp5):
+                            x1 = cur11.center_x
+                            y1 = cur11.center_y
+                            r1 = cur11.s_range
+
+                            x3 = cur.x
+                            y3 = cur.y
+                            r3 =cur.a_range
+                            while True:
+                                d1 = check_distance(x2, y2, x1, y1)
+                                if (d1 < r1):
+                                    d = check_distance(x2, y2, x3, y3)
+                                    if (d < r3):
+                                        break
+
+                                x2 = randrange(0, 500)
+                                y2 = randrange(0, 500)
+                            t = Thing(x2, y2)
+                            cur11.things_thread_pool.append(t)
+                            cur.things_thread_pool.append(t)
+                            things.append(t)
+                            t.distance_from_app = check_distance(x2, y2, x1, y1)
+
+                            x2 = randrange(0, 500)
+                            y2 = randrange(0, 500)
+
+                        for cur20 in range(0, pluged_num):
+                            cur.things_thread_pool[cur20].EnType = 'pluged'
+
+
+
+
+                print("Done")
+                print('')
+                for cur11 in sorted(sponsors):
+                    print("Sponsor  "+str(cur11.type)+": ")
+                    print("Number of apps :"+ str(len(cur11.application_thread_pool)))
+                    print("Number of things :" + str(len(cur11.things_thread_pool)))
+                    print('')
+                    print('')
+
+
+
+
+
+
+                                #HELP
             elif bash == "help":
-                print (" \"create\"  to create Sponsor/Application/Thing ")
-                print (" \"topo\" to view designed system")
-                print (" \"quit\" to exit from the system")
-                print (" \"help\" to show more information about using the system" )
-                print(" \"evaluate\" to evaluate things in each sponsor")
-                print(" \"show details\" to show details of evaluation")
-                print(" \"pref\" preferece funtion of each thing")
-                print(" \"sub\" show available things in each application range")
-
-
-
-
-
-
-                    #for cur4 in range(0, number_tmp3):
-                 #   t = Application()
-                  #  sorted(sponsors)[number_tmp2].application_thread_pool.append(t)
-
-
+                print (" \"create\" : to create Sponsor/Application/Thing ")
+                print (" \"topo\" : to view designed system")
+                print(" \"back\" : go back to the first step")
+                print (" \"help\" : to show more information about using the system" )
+                print(" \"evaluate\" : to evaluate things in each sponsor")
+                print(" \"show details\" : to show details of evaluation")
+                print(" \"pref\" : preferece funtion of each thing")
+                print(" \"sub\" : show available things in each application range briefly")
+                print(" \"subsets\" : add available things in choosen application and calculate cost")
+                print(" \"positions\" : show position of each created Sponsor , Application , Things")
+                print(" \"g\" : graphical show of scenario")
+                print(" \"quit\" : to exit from the system")
 
 
 
