@@ -53,7 +53,7 @@ class Application(threading.Thread):
         self.alpha = 0
         self.beta = 0
         self.landa = 0
-        #self.teta = 0
+        self.teta = 0
         self.pref=0
 
 
@@ -82,7 +82,6 @@ class Thing(threading.Thread):
         self.distance_from_app=0
         self.avg_of_values=0
         self.pnum=0
-        self.teta = 0
 
     def __lt__(self, other):
         return self.ID > other.ID
@@ -122,25 +121,12 @@ def evaluation():
             for cur3 in range(0, len(things)):
                 things[cur3].value.append(uniform(0, 1))
 
-
-
         for cur in apps:
             p1=0
             print("---------------Application \"" + str(
                 cur.ID) + "\" has following things -------------------")
-
-
             for cur5 in sorted(cur.things_thread_pool):
                 cur5.avg_of_values = sum(cur5.value) / len(cur5.value)
-
-            for cur5 in sorted(cur.things_thread_pool):
-                if cur5.EnType == 'unplugged':
-
-                    cur5.teta=random()
-                    cur5.avg_of_values+=cur5.avg_of_values * cur5.teta
-
-
-
             for cur4 in sorted(cur.things_thread_pool):
                 cur.avg_of_values_of_things += cur4.avg_of_values
             for cur3 in sorted(cur.things_thread_pool):
@@ -450,12 +436,12 @@ def Terminal(sponsors):
                             alpha = randrange(0, 10) / 10
                             beta = randrange(0, 10) / 10
                             landa = randrange(0, 10) / 10
-                            #teta = randrange(1, 5) / 10
+                            teta = randrange(1, 5) / 10
 
                             cur.alpha = alpha
                             cur.beta = beta
                             cur.landa = landa
-                            #cur.teta = teta
+                            cur.teta = teta
                         if bash != 'y' and bash != 'n':
                             print("Wrong command !")
                             continue
@@ -465,9 +451,9 @@ def Terminal(sponsors):
                         print("Alpha = "+ str(cur.alpha))
                         print("Beta = " + str(cur.beta))
                         print("Landa = " + str(cur.landa))
-                        #print("teta = " + str(cur.teta))
+                        print("teta = " + str(cur.teta))
 
-                        p= (cur.alpha*int(cur.avg_of_values_of_things*100) + cur.beta* len(cur.things_thread_pool)*2 + cur.landa*(int(cur.avg_of_distances_of_things)/2))/3
+                        p= (cur.alpha*int(cur.avg_of_values_of_things*100) + cur.beta* len(cur.things_thread_pool)*2 + cur.landa*(int(cur.avg_of_distances_of_things)/2)+ cur.teta *cur.pnum*2)/4
                         cur.pref = p
 
 
@@ -521,7 +507,7 @@ def Terminal(sponsors):
                                     cur.avg_of_distances_of_things += is_in_range
                                     cur.avg_of_distances_of_things /= (len(cur.things_thread_pool)+1)
 
-                                    p = (cur.alpha * int(cur.avg_of_values_of_things * 100) + cur.beta * (len(cur.things_thread_pool)+1) * 2 + cur.landa * (int(cur.avg_of_distances_of_things) / 2)) / 3
+                                    p = (cur.alpha * int(cur.avg_of_values_of_things * 100) + cur.beta * (len(cur.things_thread_pool)+1) * 2 + cur.landa * (int(cur.avg_of_distances_of_things) / 2) + cur.teta * cur.pnum * 2) / 4
                                     q = p - cur.pref
                                     cost = int(q*20)
                                     print("Adding thing \"" + str(cur16.ID)+"\" to this application ")
@@ -831,15 +817,13 @@ def Terminal(sponsors):
                 print('')
                 print(" \"show details\" : to show details of evaluation")
                 print('')
-                print(" \"pref\" : preference function of each thing")
+                print(" \"pref\" : preferece funtion of each thing")
                 print('')
                 print(" \"sub\" : show available things in each application range briefly")
                 print('')
-                print(" \"subsets\" : add available things in chosen application and calculate cost")
+                print(" \"subsets\" : add available things in choosen application and calculate cost")
                 print('')
                 print(" \"positions\" : show position of each created Sponsor , Application , Things")
-                print('')
-                print(" \"random\" : create a random scenario")
                 print('')
                 print(" \"g\" : graphical show of scenario")
                 print('')
