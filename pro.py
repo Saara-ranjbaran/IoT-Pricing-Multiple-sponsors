@@ -7,6 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
+
 class Type(Enum):
     A = 0
     B = 1
@@ -55,6 +56,8 @@ class Application(threading.Thread):
         self.landa = 0
         #self.teta = 0
         self.pref=0
+        self.avotir= []
+        self.fotir=[]
 
 
     def evaluate(self):
@@ -83,6 +86,7 @@ class Thing(threading.Thread):
         self.avg_of_values=0
         self.pnum=0
         self.teta = 0
+        self.fee =0
 
     def __lt__(self, other):
         return self.ID > other.ID
@@ -162,7 +166,20 @@ def evaluation():
             print('')
 
 
+def knapSack(W, wt, val, n):
+    K = [[0 for x in range(W + 1)] for x in range(n + 1)]
 
+    # Build table K[][] in bottom up manner
+    for i in range(n + 1):
+        for w in range(W + 1):
+            if i == 0 or w == 0:
+                K[i][w] = 0
+            elif wt[i - 1] <= w:
+                K[i][w] = max(val[i - 1] + K[i - 1][w - wt[i - 1]], K[i - 1][w])
+            else:
+                K[i][w] = K[i - 1][w]
+
+    return K[n][W]
 
 def Terminal(sponsors):
     bash = ""
@@ -623,6 +640,93 @@ def Terminal(sponsors):
                             print("y: " + str(cur2.y))
                             print('')
                             print('')
+# added value
+            elif bash == "added value":
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    n = 0
+                    for cur in apps:
+                        print("---------------added value of things for application \"" + str(
+                            cur.ID) + "\"  -------------------")
+                        v1=cur.avg_of_values_of_things
+                        v2=cur.avg_of_distances_of_things
+                        for cur16 in things:
+                            is_in_range = check_distance(cur16.x, cur16.y, cur.x, cur.y)
+                            if (is_in_range < cur.a_range):
+                                if cur16 not in cur.things_thread_pool:
+                                    #sub_list.append(cur16)
+                                    cur.avg_of_values_of_things *= len(cur.things_thread_pool)
+                                    cur.avg_of_values_of_things += sum(cur16.value)
+                                    cur.avg_of_values_of_things /= (len(cur.things_thread_pool)+1)
+
+                                    cur.avg_of_distances_of_things *= len(cur.things_thread_pool)
+                                    cur.avg_of_distances_of_things += is_in_range
+                                    cur.avg_of_distances_of_things /= (len(cur.things_thread_pool)+1)
+
+                                    p = (cur.alpha * int(cur.avg_of_values_of_things * 100) + cur.beta * (len(cur.things_thread_pool)+1) * 2 + cur.landa * (int(cur.avg_of_distances_of_things) / 2)) / 3
+                                    q = p - cur.pref
+                                    print("Adding thing \"" + str(cur16.ID)+"\" to this application ")
+                                    print("The new preference of this app is :" + str(p))
+                                    print("The added value for this application would be :" + str(q))
+                                    print('')
+                                    print('')
+                                    cur.avg_of_values_of_things = v1
+                                    cur.avg_of_distances_of_things = v2
+                                    n += 1
+                                    cur.avotir.append(q)
+                                    cur.fotir.append(cur16.fee)
+                        n = 0
+
+
+
+
+#average of values of things
+            elif bash == "avg of values":
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        print("Application \"" + str(cur.ID) + "\" ")
+                        print("average of added value  is : " + str(cur.avotir))
+                        print("average of added value  is : " + str(cur.fotir))
+                        #for cur16 in cur.things_thread_pool:
+                            #print("average values of thing \"" + str(cur16.ID)+"\" is : " + str(cur16.avg_of_values))
+
+
+#fee calculating
+            elif bash == "fee cal":
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        for cur16 in cur.things_thread_pool:
+                            cur16.fee = round(cur16.avg_of_values * 100)
+                            print("fee of thing \"" + str(cur16.ID) + "\" is : " + str(
+                                cur16.fee))
+
+#knapsack algorithm
+
+            elif bash == "knapsack":
+                print("Enter capacity please")
+                bash3 = input("$:")
+                #val = [60, 100, 120]
+                #wt = [10, 20, 30]
+                W = int(bash3)
+
+
+                for cur11 in sorted(sponsors):
+                    apps = sorted(cur11.application_thread_pool)
+                    if len(cur11.application_thread_pool) == 0:
+                        continue
+                    for cur in apps:
+                        n = len(cur.avotir)
+                        print(knapSack(W, cur.fotir, cur.avotir, n))
+
+
 
 
 # GRAPHICAL SHOW
@@ -697,6 +801,7 @@ def Terminal(sponsors):
                 pos1 = {1: (0, 0), 2: (0, 500), 3: (500, 500), 4: (500, 0)}
                 nx.draw_networkx_nodes(G, pos=pos1, node_size=1, nodelist=[1, 2, 3, 4], node_color='b',alpha=0.1)
                 plt.show()
+
 # RANDOM
             elif bash == "random":
                 rand1 = randrange(1,4)
